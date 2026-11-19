@@ -1,7 +1,11 @@
+﻿import os
+from contextlib import asynccontextmanager
 
-import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from app.database.connection import Base, engine
+import app.models
 
 from app.routers.auth import router as auth_router
 from app.routers.profile import router as profile_router
@@ -16,23 +20,18 @@ from app.routers.roadmap import router as roadmap_router
 from app.routers.progress import router as progress_router
 
 
-# ==========================================
-# FASTAPI APPLICATION
-# ==========================================
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    Base.metadata.create_all(bind=engine)
+    yield
+
 
 app = FastAPI(
     title="SkillBridgeAI API",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
-
-# ==========================================
-# CORS CONFIGURATION
-# Allow React/Vite frontend to access FastAPI
-# ==========================================
-
-# Local development origins are always allowed.
-# Add production frontend origins using CORS_ORIGINS.
 configured_origins = [
     origin.strip().rstrip("/")
     for origin in os.getenv("CORS_ORIGINS", "").split(",")
@@ -54,11 +53,6 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type", "Accept"],
 )
 
-
-# ==========================================
-# EXISTING ROUTERS
-# ==========================================
-
 app.include_router(auth_router)
 app.include_router(profile_router)
 app.include_router(skills_router)
@@ -66,24 +60,12 @@ app.include_router(dashboard_router)
 app.include_router(resume_router)
 app.include_router(github_analysis_router)
 app.include_router(skill_analyzer_router)
-
-
-# ==========================================
-# CAREER FEATURES
-# ==========================================
-
 app.include_router(careers_router)
 app.include_router(skill_gap_router)
 app.include_router(roadmap_router)
 app.include_router(progress_router)
 
 
-# ==========================================
-# ROOT ENDPOINT
-# ==========================================
-
 @app.get("/")
 def home():
-    return {
-        "message": "SkillBridgeAI API is working!"
-    }
+    return {"message": "SkillBridgeAI API is working!"}

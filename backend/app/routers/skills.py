@@ -22,7 +22,8 @@ router = APIRouter(
 @router.post("/", response_model=SkillResponse)
 def create_skill(
     skill: SkillCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id),
 ):
     existing_skill = (
         db.query(Skill)

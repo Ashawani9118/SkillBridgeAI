@@ -45,3 +45,6 @@ typing_extensions==4.16.0
 tzdata==2026.3
 urllib3==2.7.0
 uvicorn==0.52.1
+PyMuPDF==1.28.2
+pytesseract==0.3.13
+Pillow==12.3.0

@@ -1,3 +1,4 @@
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -19,7 +20,6 @@ def create_profile(
     user_id: int = Depends(get_current_user_id),
     db: Session = Depends(get_db)
 ):
-
     existing_profile = (
         db.query(Profile)
         .filter(Profile.user_id == user_id)
@@ -52,7 +52,6 @@ def get_my_profile(
     user_id: int = Depends(get_current_user_id),
     db: Session = Depends(get_db)
 ):
-
     profile = (
         db.query(Profile)
         .filter(Profile.user_id == user_id)
@@ -66,3 +65,32 @@ def get_my_profile(
         )
 
     return profile
+
+
+@router.put("/", response_model=ProfileResponse)
+def update_my_profile(
+    profile_data: ProfileCreate,
+    user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
+    existing_profile = (
+        db.query(Profile)
+        .filter(Profile.user_id == user_id)
+        .first()
+    )
+
+    if not existing_profile:
+        raise HTTPException(
+            status_code=404,
+            detail="Profile not found"
+        )
+
+    existing_profile.full_name = profile_data.full_name
+    existing_profile.college = profile_data.college
+    existing_profile.degree = profile_data.degree
+    existing_profile.location = profile_data.location
+
+    db.commit()
+    db.refresh(existing_profile)
+
+    return existing_profile

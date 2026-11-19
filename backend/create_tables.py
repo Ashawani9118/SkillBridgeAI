@@ -1,9 +1,8 @@
-from app.database.connection import Base, engine
-from app.models.user import User
-from app.models.profile import Profile
+from app.database.connection import engine, Base
+import app.models
 
-print("Creating database tables...")
+print("Creating missing database tables...")
 
 Base.metadata.create_all(bind=engine)
 
-print("✅ Database tables created successfully!")
+print("Database tables checked successfully!")

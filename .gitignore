@@ -22,3 +22,14 @@ frontend/dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local backups and generated audit artifacts
+.local-backups/
+*.bak
+*.backup
+*.before-*
+*.pycode
+frontend/audit-dry-run.txt
+frontend/package.before-audit-fix.json
+frontend/package-lock.before-audit-fix.json
+!**/.env.example

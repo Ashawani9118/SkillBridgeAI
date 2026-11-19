@@ -25,3 +25,11 @@ frontend/dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local backups and generated audit artifacts
+.local-backups/
+*.bak
+*.backup
+*.before-*
+*.pycode
+!**/.env.example

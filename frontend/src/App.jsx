@@ -1,103 +1,157 @@
+import { useEffect } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
 
-import { useEffect, useState } from "react";
-import "./App.css";
+import Home from './pages/Home/Home'
+import Login from './pages/Login/Login'
+import Signup from './pages/Signup/Signup'
+import ProfileSetup from './pages/ProfileSetup/ProfileSetup'
+import Dashboard from './pages/Dashboard/Dashboard'
+import CareerAnalysis from './pages/CareerAnalysis/CareerAnalysis'
+import Skills from './pages/Skills/Skills'
+import Roadmap from './pages/Roadmap/Roadmap'
+import Progress from './pages/Progress/Progress'
+import Settings from './pages/Settings/Setting.jsx'
+import GitHubAnalysis from './pages/GitHubAnalysis/GitHubAnalysis'
+import ResumeAnalysis from './pages/ResumeAnalysis/ResumeAnalysis'
+
+import ProtectedRoute from './components/ProtectedRoute'
+import { getUser } from './utils/auth'
 
 function App() {
-  const [dashboard, setDashboard] = useState(null);
-  const [error, setError] = useState("");
-
   useEffect(() => {
-    fetch("http://localhost:8000/dashboard/", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    })
-      .then(async (response) => {
-        if (!response.ok) {
-          throw new Error("Unable to load dashboard");
-        }
+    const applyTheme = () => {
+      const user = getUser()
+      const appearance = user?.appearance || 'dark'
 
-        return response.json();
-      })
-      .then((data) => {
-        setDashboard(data);
-      })
-      .catch((err) => {
-        setError(err.message);
-      });
-  }, []);
+      document.body.classList.remove('dark-mode', 'light-mode')
 
-  if (error) {
-    return (
-      <div className="app">
-        <div className="error-box">
-          <h2>Dashboard unavailable</h2>
-          <p>{error}</p>
-          <p>Please login first.</p>
-        </div>
-      </div>
-    );
-  }
+      if (appearance === 'dark') {
+        document.body.classList.add('dark-mode')
+      } else if (appearance === 'system') {
+        const prefersDark = window.matchMedia(
+          '(prefers-color-scheme: dark)'
+        ).matches
 
-  if (!dashboard) {
-    return (
-      <div className="app">
-        <h2>Loading SkillBridgeAI...</h2>
-      </div>
-    );
-  }
+        document.body.classList.add(
+          prefersDark ? 'dark-mode' : 'light-mode'
+        )
+      } else {
+        document.body.classList.add('light-mode')
+      }
+    }
+
+    applyTheme()
+
+    const handleThemeChange = () => {
+      applyTheme()
+    }
+
+    window.addEventListener(
+      'skillbridge-theme-change',
+      handleThemeChange
+    )
+
+    const mediaQuery = window.matchMedia(
+      '(prefers-color-scheme: dark)'
+    )
+
+    const handleSystemThemeChange = () => {
+      const user = getUser()
+
+      if (user?.appearance === 'system') {
+        applyTheme()
+      }
+    }
+
+    mediaQuery.addEventListener(
+      'change',
+      handleSystemThemeChange
+    )
+
+    return () => {
+      window.removeEventListener(
+        'skillbridge-theme-change',
+        handleThemeChange
+      )
+
+      mediaQuery.removeEventListener(
+        'change',
+        handleSystemThemeChange
+      )
+    }
+  }, [])
 
   return (
-    <div className="app">
-      <header className="header">
-        <div>
-          <h1>SkillBridgeAI</h1>
-          <p>Your AI-powered career dashboard</p>
-        </div>
-      </header>
+    <>
+      <Routes>
 
-      <main className="dashboard">
-        <section className="welcome-card">
-          <h2>
-            Welcome, {dashboard.user.name} 👋
-          </h2>
+        {/* Public Routes */}
 
-          <p>{dashboard.profile?.degree || "Student"}</p>
-          <p>{dashboard.profile?.college || ""}</p>
-        </section>
+        <Route path="/" element={<Home />} />
 
-        <section className="stats">
-          <div className="card">
-            <h3>Total Skills</h3>
-            <strong>{dashboard.skill_count}</strong>
-          </div>
+        <Route path="/login" element={<Login />} />
 
-          <div className="card">
-            <h3>Profile</h3>
-            <strong>Complete</strong>
-          </div>
+        <Route path="/signup" element={<Signup />} />
 
-          <div className="card">
-            <h3>Career</h3>
-            <strong>Python Developer</strong>
-          </div>
-        </section>
 
-        <section className="skills-section">
-          <h2>My Skills</h2>
+        {/* Protected Routes */}
 
-          <div className="skills-grid">
-            {dashboard.skills.map((skill) => (
-              <div className="skill-card" key={skill.id}>
-                <h3>{skill.skill_name}</h3>
-                <p>{skill.proficiency}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      </main>
-    </div>
-  );
+        <Route element={<ProtectedRoute />}>
+
+          <Route
+            path="/dashboard"
+            element={<Dashboard />}
+          />
+
+          <Route
+            path="/career-analysis"
+            element={<CareerAnalysis />}
+          />
+
+          <Route
+            path="/github-analysis"
+            element={<GitHubAnalysis />}
+          />
+
+          <Route
+            path="/resume-analysis"
+            element={<ResumeAnalysis />}
+          />
+
+          <Route
+            path="/skills"
+            element={<Skills />}
+          />
+
+          <Route
+            path="/roadmap"
+            element={<Roadmap />}
+          />
+
+          <Route
+            path="/progress"
+            element={<Progress />}
+          />
+
+          <Route
+            path="/settings"
+            element={<Settings />}
+          />
+          <Route path="/profile-setup" element={<ProfileSetup />} />
+
+        </Route>
+
+
+        {/* Unknown Route */}
+
+        <Route
+          path="*"
+          element={<Navigate to="/" replace />}
+        />
+
+      </Routes>
+    </>
+  )
 }
 
-export default App;
+export default App

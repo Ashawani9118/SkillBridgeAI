@@ -1,10 +1,17 @@
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parents[2] / '.env')
 from datetime import datetime, timedelta, timezone
 
 from jose import jwt
 from passlib.hash import argon2
 
 
-SECRET_KEY = "skillbridgeai-super-secret-key-change-later"
+SECRET_KEY = os.getenv('JWT_SECRET_KEY')
+if not SECRET_KEY or len(SECRET_KEY) < 32:
+    raise RuntimeError('JWT_SECRET_KEY must be configured with at least 32 characters.')
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
